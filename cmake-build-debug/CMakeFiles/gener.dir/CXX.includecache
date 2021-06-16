@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Data/repos/gener/main.cpp
+iostream
+-
+fstream
+-
+string
+-
+unordered_map
+-
+vector
+-
+chrono
+-
+

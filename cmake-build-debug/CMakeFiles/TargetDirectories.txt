@@ -1,0 +1,3 @@
+C:/Data/repos/gener/cmake-build-debug/CMakeFiles/gener.dir
+C:/Data/repos/gener/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Data/repos/gener/cmake-build-debug/CMakeFiles/rebuild_cache.dir
