@@ -2,21 +2,26 @@
 #include <fstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-#include <chrono>
+#include <bitset>
 
-#define REF_FASTA "../ref.fasta"
-#define SV_FASTA "../task2_sv.fasta"
-#define LONG_FASTA "../long.fasta"
+#define REF_FASTA "../data/ref.fasta"
+#define SV_FASTA "../data/sv.fasta"
+#define LONG_FASTA "../data/long.fasta"
 #define SVS_BED "../sv.bed"
 #define IDENTICAL_LEN 50
 #define MAX_SV_LEN 1005
 #define MIN_SV_LEN 50
+#define LEN_A 15
 
-using namespace std;
+using std::cout;        using std::endl;
+using std::string;      using std::unordered_map;
+using std::unordered_multimap;
+using std::ifstream;    using std::vector;
+using std::ofstream;    using std::bitset;
 
-class ans_t {
-public:
+struct ans_t {
     std::string type;
     std::string id1;
     int pos1, len1;
@@ -50,6 +55,18 @@ public:
     }
 };
 
+struct id_pos_t {
+    std::string id;
+    unsigned long long pos;
+
+    id_pos_t(std::string id, unsigned long long pos): id(std::move(id)), pos(pos) {}
+
+    void print(std::ostream & os = std::cout) const
+    {
+        os << id << "\t" << pos;
+    }
+};
+
 inline bool base_complement(const char & x, const char & y)
 {
     static const string dict = "ACTG";
@@ -63,19 +80,20 @@ inline bool base_complement(const char & x, const char & y)
     return false;
 }
 
-void init(unordered_map<string, string> & ref_map, unordered_map<string, string> & sv_map)
+void read_fasta(unordered_map<string, string> & ref_map, unordered_map<string, string> & long_map)
 {
     ifstream ref_if, long_if;
     string line;
-    int count[10005], ct2[15];
-    int tot_lines = 0;
 
-    for (int i = 0; i < 10001; ++i) {
-        count[i] = 0;
+    ref_if.open(REF_FASTA);
+    while (getline(ref_if, line)) {
+        string title = line.substr(1);
+        if (!getline(ref_if, line)) {
+            break;
+        }
+        ref_map[title] = line;
     }
-    for (int i = 0; i < 15; ++i) {
-        ct2[i] = 0;
-    }
+    ref_if.close();
 
     long_if.open(LONG_FASTA);
     while (getline(long_if, line)) {
@@ -83,21 +101,98 @@ void init(unordered_map<string, string> & ref_map, unordered_map<string, string>
         if (!getline(long_if, line)) {
             break;
         }
-        count[line.size()]++;
-        tot_lines++;
+        long_map[title] = line;
     }
     long_if.close();
+}
 
-    for (int i = 0; i < 10001; ++i) {
-        if (count[i]) {
-            ct2[i / 1000] += count[i];
+void make_hashmap(unordered_map<string, string> & src_map, unordered_multimap<unsigned long long, id_pos_t> & res_map, int hash_len)
+{
+    unsigned long long mask = 0;
+    if (hash_len > 32) {
+        cout << "make_hashmap: possible collisions" << endl;
+        mask = ~0;
+    } else {
+        for (auto i = 0; i < hash_len * 2; ++i) {
+            mask = (mask << 1) + 1;
+        }
+    }
+    cout << "make_hashmap: mask=" << mask << endl;
+
+    unordered_map<char, unsigned long long> dict = {{'A', 0}, {'G', 1}, {'C', 2}, {'T', 3}};
+
+    res_map.clear();
+    for (auto const & item: src_map) {
+        string id = item.first;
+        string base = item.second;
+        auto base_len = base.length();
+
+        if (base_len < hash_len) {
+            cout <<"make_hashmap: base_len < hash_len" << endl;
+            return;
+        }
+
+        unsigned long long hash = 0;
+        auto i = base_len;
+        for (i = 0; i < hash_len; ++i) {
+            hash = ((hash << 2) | dict[base[i]]) & mask;
+        }
+        for (; i < base_len; ++i) {
+            res_map.insert({hash, id_pos_t(id, i - hash_len)});
+            hash = ((hash << 2) | dict[base[i]]) & mask;
+        }
+        res_map.insert({hash, id_pos_t(id, i - hash_len)});
+    }
+
+    cout << "make_hashmap: done." << endl;
+}
+
+void exam_data(unordered_map<string, string> & ref_map, unordered_map<string, string> & long_map)
+{
+    unordered_map<string, int> long_visited;
+
+    for (const auto& item: long_map) {
+        long_visited.insert({item.first, 0});
+    }
+
+    auto long_size = long_map.size();
+    auto long_matched = 0;
+
+    for (const auto& item: ref_map) {
+        string base = item.second;
+        auto base_len = base.length();
+        auto last_perc = base_len;
+        last_perc = 0;
+        for (auto i = 0; i + LEN_A - 1 < base_len; i += LEN_A) {
+            string base_excerpt = base.substr(i, LEN_A);
+            bool printed = false;
+
+            auto perc = 100 * i / base_len;
+            if (perc >= last_perc + 1) {
+                cout << "base: " << perc << "%" << endl;
+                last_perc = perc;
+            }
+
+            for (const auto& x: long_map) {
+                if (x.second.find(base_excerpt) != string::npos) {
+                    if (!printed) {
+                        cout << base_excerpt << " matched: " << endl;
+                        printed = true;
+                    }
+                    cout << "\tin " << x.first << endl;
+                    auto old_size = long_visited[x.first];
+                    long_visited[x.first]++;
+                    if (old_size == 0) {
+                        cout << ++long_matched << "/" << long_size << endl;
+                    }
+                }
+            }
         }
     }
 
-    for (int i = 0; i < 11; ++i) {
-        cout << i * 1000 << "-" << (i + 1) * 1000 << ": " << ct2[i] << endl;
-    }
-    cout << "Total lines: " << tot_lines << endl;
+//    for (const auto& item: long_map) {
+//        long_visited.insert({item.first, 0});
+//    }
 }
 
 bool check_ins(const string & ref, const string & sv, int & i, int & j, int & pos, int & len)
@@ -295,33 +390,70 @@ void check_tra(unordered_map<string, string> & ref_map, unordered_map<string, st
     }
 }
 
-int main() {
-    // for timing ------------------------------------------------------------------------------------------------------
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::duration;
-    using std::chrono::milliseconds;
-
-    auto t1 = high_resolution_clock::now();
-    //------------------------------------------------------------------------------------------------------------------
-
-    unordered_map<string, string> ref_map, sv_map;
+void work(unordered_map<string, string> & ref_map, unordered_map<string, string> & sv_map)
+{
     vector<ans_t> ans_vec, unk_vec;
 
-    init(ref_map, sv_map);
+    // find svs in each DNA chain
+    for (const auto& x : ref_map) {
+        string ref = x.second;
+        string sv = sv_map[x.first];
 
-    auto t2 = high_resolution_clock::now();
+        find_svs(ref, sv, x.first, ans_vec, unk_vec);
+    }
+
+    // check for TRA
+    check_tra(ref_map, sv_map, ans_vec, unk_vec);
+
+    // write output to file
+    ofstream ofs;
+    ofs.open(SVS_BED);
+    for (const auto& x: ans_vec) {
+        x.print(ofs);
+    }
+    ofs.close();
+}
+
+int main()
+{
+    unordered_map<string, string> ref_map, long_map;
+    unordered_multimap<unsigned long long, id_pos_t> ref_hashmap;
+
+    read_fasta(ref_map, long_map);
+    make_hashmap(ref_map, ref_hashmap, 11);
+
+    unordered_map<unsigned long long, int> key_count;
+
+    int multi_occur_count = 0;
+    int total_keys = 0;
+
+    for (auto const & x: ref_hashmap) {
+        if (key_count.find(x.first) == key_count.end()) {
+            total_keys++;
+        }
+        key_count.insert({x.first, 0});
+        key_count[x.first]++;
+    }
 
 
-    // for timing ------------------------------------------------------------------------------------------------------
+    for (auto const & x: key_count) {
+        if (x.second > 2) {
+            multi_occur_count++;
+//            cout << x.first << ":\t" << x.second << endl;
+//            auto it = ref_hashmap.equal_range(x.first);
+//            for (auto y = it.first; y != it.second; ++y) {
+//                y->second.print(cout);
+//                cout << endl;
+//            }
+        }
+    }
 
-    auto t3 = high_resolution_clock::now();
+    cout << "multiple occurs: " << multi_occur_count << "/" << total_keys << "=" << double(multi_occur_count) / total_keys << endl;
+    cout << "average occurs: " << double(ref_hashmap.size()) / total_keys << endl;
 
-    duration<double, std::milli> ms1 = t2 - t1;
-    duration<double, std::milli> ms2 = t3 - t2;
+//    exam_data(ref_map, long_map);
+//    work(ref_map, sv_map);
 
-//    cout << ms1.count() << "ms + " << ms2.count() << "ms" << endl;
-    //------------------------------------------------------------------------------------------------------------------
 
     return 0;
 }
