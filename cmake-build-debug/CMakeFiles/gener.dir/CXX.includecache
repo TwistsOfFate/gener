@@ -6,6 +6,22 @@
 
 #IncludeRegexTransform: 
 
+C:/Data/repos/gener/declarations.h
+string
+-
+unordered_map
+-
+vector
+-
+unordered_set
+-
+
+C:/Data/repos/gener/defines.h
+string
+-
+iostream
+-
+
 C:/Data/repos/gener/main.cpp
 iostream
 -
@@ -31,4 +47,26 @@ tuple
 -
 cmath
 -
+defines.h
+C:/Data/repos/gener/defines.h
+declarations.h
+C:/Data/repos/gener/declarations.h
+
+C:/Data/repos/gener/prepare.cpp
+iostream
+-
+fstream
+-
+string
+-
+unordered_map
+-
+vector
+-
+set
+-
+unordered_set
+-
+defines.h
+C:/Data/repos/gener/defines.h
 

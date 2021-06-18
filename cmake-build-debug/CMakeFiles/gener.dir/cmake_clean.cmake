@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/gener.dir/check_sv.cpp.obj"
   "CMakeFiles/gener.dir/main.cpp.obj"
+  "CMakeFiles/gener.dir/prepare.cpp.obj"
   "gener.exe"
   "gener.exe.manifest"
   "gener.pdb"

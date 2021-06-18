@@ -4,7 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "C:/Data/repos/gener/check_sv.cpp" "C:/Data/repos/gener/cmake-build-debug/CMakeFiles/gener.dir/check_sv.cpp.obj"
   "C:/Data/repos/gener/main.cpp" "C:/Data/repos/gener/cmake-build-debug/CMakeFiles/gener.dir/main.cpp.obj"
+  "C:/Data/repos/gener/prepare.cpp" "C:/Data/repos/gener/cmake-build-debug/CMakeFiles/gener.dir/prepare.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

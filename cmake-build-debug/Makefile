@@ -141,6 +141,33 @@ gener/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/build
 .PHONY : gener/fast
 
+check_sv.obj: check_sv.cpp.obj
+
+.PHONY : check_sv.obj
+
+# target to build an object file
+check_sv.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/check_sv.cpp.obj
+.PHONY : check_sv.cpp.obj
+
+check_sv.i: check_sv.cpp.i
+
+.PHONY : check_sv.i
+
+# target to preprocess a source file
+check_sv.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/check_sv.cpp.i
+.PHONY : check_sv.cpp.i
+
+check_sv.s: check_sv.cpp.s
+
+.PHONY : check_sv.s
+
+# target to generate assembly for a file
+check_sv.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/check_sv.cpp.s
+.PHONY : check_sv.cpp.s
+
 main.obj: main.cpp.obj
 
 .PHONY : main.obj
@@ -168,6 +195,33 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+prepare.obj: prepare.cpp.obj
+
+.PHONY : prepare.obj
+
+# target to build an object file
+prepare.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/prepare.cpp.obj
+.PHONY : prepare.cpp.obj
+
+prepare.i: prepare.cpp.i
+
+.PHONY : prepare.i
+
+# target to preprocess a source file
+prepare.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/prepare.cpp.i
+.PHONY : prepare.cpp.i
+
+prepare.s: prepare.cpp.s
+
+.PHONY : prepare.s
+
+# target to generate assembly for a file
+prepare.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/prepare.cpp.s
+.PHONY : prepare.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -177,9 +231,15 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... gener
+	@echo ... check_sv.obj
+	@echo ... check_sv.i
+	@echo ... check_sv.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... prepare.obj
+	@echo ... prepare.i
+	@echo ... prepare.s
 .PHONY : help
 
 

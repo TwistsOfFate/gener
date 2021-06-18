@@ -80,7 +80,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="C:/Data/repos/gener/check_sv.cpp">
+			<Option target="gener"/>
+		</Unit>
+		<Unit filename="C:/Data/repos/gener/declarations.h">
+			<Option target="gener"/>
+		</Unit>
+		<Unit filename="C:/Data/repos/gener/defines.h">
+			<Option target="gener"/>
+		</Unit>
 		<Unit filename="C:/Data/repos/gener/main.cpp">
+			<Option target="gener"/>
+		</Unit>
+		<Unit filename="C:/Data/repos/gener/prepare.cpp">
 			<Option target="gener"/>
 		</Unit>
 		<Unit filename="C:/Data/repos/gener/CMakeLists.txt">
