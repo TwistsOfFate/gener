@@ -12,6 +12,7 @@
 #define MAX_SV_LEN 1005
 #define MIN_SV_LEN 50
 #define LEN_A 12
+#define LEN_B 200
 
 struct id_pos_t {
     std::string id;

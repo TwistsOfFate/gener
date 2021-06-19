@@ -101,3 +101,51 @@ void make_hashmap(unordered_map<string, string> & src_map,
 
     cout << "make_hashmap: done." << endl;
 }
+
+void make_inv(string const & src, string & res)
+{
+    unordered_map<char, char> comp = {{'A', 'T'}, {'G', 'C'}, {'C', 'G'}, {'T', 'A'}};
+    auto len = src.length();
+    res.resize(len);
+    for (auto i = 0; i < len; ++i) {
+        res[len - 1 - i] = comp[src[i]];
+    }
+}
+
+void make_inv_hashmap(unordered_map<string, string> & src_map,
+                  unordered_map<string, unordered_multimap<unsigned long long, unsigned long long> > & res_map,
+                  int hash_len)
+{
+    unsigned long long mask = get_mask_from_hash_len(hash_len);
+    cout << "make_inv_hashmap: mask=" << mask << endl;
+
+    unordered_map<char, unsigned long long> dict = {{'A', 0}, {'G', 1}, {'C', 2}, {'T', 3}};
+
+    res_map.clear();
+    for (auto const & item: src_map) {
+        string id = item.first;
+        string base = item.second;
+        auto base_len = base.length();
+
+        if (base_len < hash_len) {
+            cout <<"make_inv_hashmap: base_len < hash_len" << endl;
+            return;
+        }
+
+        for (auto i = hash_len - 1; i < base_len; ++i) {
+            string inv;
+            make_inv(base.substr(i - hash_len + 1, hash_len), inv);
+            unsigned long long hash = 0;
+            for (auto ch: inv) {
+                hash = ((hash << 2) | dict[ch]) & mask;
+            }
+            if (res_map.find(id) == res_map.end()) {
+                unordered_multimap<unsigned long long, unsigned long long> new_map;
+                res_map.insert({id, new_map});
+            }
+            res_map[id].insert({hash, i});
+        }
+    }
+
+    cout << "make_inv_hashmap: done." << endl;
+}

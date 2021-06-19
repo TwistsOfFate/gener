@@ -1,15 +1,13 @@
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
-#include <bitset>
 #include <set>
 #include <map>
 #include <unordered_set>
 #include <tuple>
 #include <cmath>
+
 #include "defines.h"
 #include "declarations.h"
 
@@ -19,13 +17,12 @@
 using std::cout;        using std::endl;
 using std::string;      using std::unordered_map;
 using std::unordered_multimap;
-using std::ifstream;    using std::vector;
-using std::ofstream;    using std::bitset;
+using std::vector;      using std::to_string;
 using std::set;         using std::map;
 using std::pair;        using std::unordered_set;
 using std::make_tuple;  using std::tuple;
 using std::get;         using std::max;
-using std::min;
+using std::min;         using std::make_pair;
 
 void print_hash_res(unordered_multimap<unsigned long long, id_pos_t> const & hashmap, unsigned long long key,
                     string const & id, unsigned long long pos)
@@ -54,38 +51,6 @@ void count_pos_in_ref(unordered_multimap<unsigned long long, id_pos_t> const & r
         }
     }
 }
-
-//void exam_hashmap(unordered_multimap<unsigned long long, id_pos_t> const & ref_hashmap)
-//{
-//    unordered_map<unsigned long long, int> key_count;
-//
-//    int multi_occur_count = 0;
-//    int total_keys = 0;
-//
-//    for (auto const & x: ref_hashmap) {
-//        if (key_count.find(x.first) == key_count.end()) {
-//            total_keys++;
-//        }
-//        key_count.insert({x.first, 0});
-//        key_count[x.first]++;
-//    }
-//
-//
-//    for (auto const & x: key_count) {
-//        if (x.second > 2) {
-//            multi_occur_count++;
-////            cout << x.first << ":\t" << x.second << endl;
-////            auto it = ref_hashmap.equal_range(x.first);
-////            for (auto y = it.first; y != it.second; ++y) {
-////                y->second.print(cout);
-////                cout << endl;
-////            }
-//        }
-//    }
-//
-//    cout << "multiple occurs: " << multi_occur_count << "/" << total_keys << "=" << double(multi_occur_count) / total_keys << endl;
-//    cout << "average occurs: " << double(ref_hashmap.size()) / total_keys << endl;
-//}
 
 // XuYipei code ------------------------------------
 
@@ -161,16 +126,44 @@ void insert_anchors(unordered_multimap<unsigned long long, unsigned long long> c
     }
 }
 
+double calc_chain_score(double fj, double xi, double xj, double yi, double yj, double wi, double wj, double seed_len)
+{
+    const double INF = 9999999;
+    const double G = LEN_B;
+
+    fj += min(min(yi - yj, xi - xj), wi);
+
+    double beta;
+    if (yj > yi || max(yi - yj, xi - xj) > G) {
+        beta = INF;
+    } else {
+        auto l = (yi - yj) - (xi - xj);
+        if (l < 0) {
+            l = -l;
+        }
+        if (l >= 0.1) { // l != 0
+            beta = 0.01 * seed_len * l + 0.5 * log2(l);
+        } else {
+            beta = 0;
+        }
+    }
+    fj -= beta;
+
+    return fj;
+}
+
 void perform_chaining(map<unsigned long long, pair<unsigned long long, unsigned long long> > const & anchor_map,
                       vector<double> & chain_scores, vector<int> & ref_coverage, int seed_len, unsigned long long seq_len)
 {
-    const double INF = 9999999;
-    const unsigned long long G = 200;
-    vector<tuple<unsigned long long, unsigned long long, unsigned long long> > anchors;
+    if (anchor_map.empty()) {
+        return;
+    }
+
+    vector<tuple<unsigned long long, unsigned long long, unsigned long long> > anchors(anchor_map.size());
     vector<unsigned long long> pred;
     pair<unsigned long long, double> best_score;
     for (auto const & anchor: anchor_map) {
-        anchors.push_back(make_tuple(anchor.first, anchor.second.first, anchor.second.second));
+        anchors.emplace_back(anchor.first, anchor.second.first, anchor.second.second);
     }
 
     // Initialize first score
@@ -184,25 +177,7 @@ void perform_chaining(map<unsigned long long, pair<unsigned long long, unsigned 
         pred.push_back(i);
         for (auto j = i - 1; j >= i - 50 && j >= 0; --j) {
             auto xj = get<0>(anchors[j]), yj = get<1>(anchors[j]), wj = get<2>(anchors[j]);
-            double candidate = chain_scores[j];
-
-            candidate += min(double(min(yi - yj, xi - xj)), double(wi));
-            double beta;
-            if (yj > yi || max(yi - yj, xi - xj) > G) {
-                beta = INF;
-            } else {
-                auto l = (yi - yj) - (xi - xj);
-                if (l < 0) {
-                    l = -l;
-                }
-                if (l != 0) {
-                    beta = 0.01 * seed_len * double(l) + 0.5 * log2(double(l));
-                } else {
-                    beta = 0;
-                }
-            }
-            candidate -= beta;
-
+            double candidate = calc_chain_score(chain_scores[j], xi, xj, yi, yj, wi, wj, seed_len);
             if (chain_scores[i] < candidate) {
                 chain_scores[i] = candidate;
                 pred[i] = j;
@@ -212,8 +187,6 @@ void perform_chaining(map<unsigned long long, pair<unsigned long long, unsigned 
             best_score = {i, chain_scores[i]};
         }
     }
-
-//    cout << "best score: " << best_score.second << endl;
 
     unsigned long long last_occur = get<0>(anchors[best_score.first]);
     unsigned long long first_occur = 0;
@@ -243,36 +216,43 @@ void perform_chaining(map<unsigned long long, pair<unsigned long long, unsigned 
 //    cout.flush();
 }
 
+void query_vs_reference(string const & query, unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
+                        int hash_len, vector<int> & ref_coverage)
+{
+    unordered_map<char, unsigned long long> dict = {{'A', 0}, {'G', 1}, {'C', 2}, {'T', 3}};
+    map<unsigned long long, pair<unsigned long long, unsigned long long> > anchor_map;
+    auto query_len = query.length();
+    unsigned long long mask = get_mask_from_hash_len(hash_len);
+
+    unsigned long long hash = 0;
+    auto i = 0;
+    for (; i < hash_len; ++i) {
+        hash = ((hash << 2) | dict[query[i]]) & mask;
+    }
+    insert_anchors(ref_hashmap, anchor_map, hash, i - 1, hash_len);
+    for (; i < query_len; ++i) {
+        hash = ((hash << 2) | dict[query[i]]) & mask;
+        insert_anchors(ref_hashmap, anchor_map, hash, i, hash_len);
+    }
+//    cout << "query_vs_reference: anchor_map size = " << anchor_map.size() << endl;
+
+    vector<double> chain_scores;
+    perform_chaining(anchor_map, chain_scores, ref_coverage, hash_len, query_len);
+}
+
 void process_longs(string const & ref, unordered_set<string> const & long_set,
                    unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
-                   string const & id, int hash_len)
+                   string const & id, int hash_len, vector<pair<unsigned long long, unsigned long long> > & suspects)
 {
-    unsigned long long mask = get_mask_from_hash_len(hash_len);
-    cout << id << endl;
+    cout << endl << id << endl;
 
-    vector<int> ref_coverage(ref.size(), false) ;
+    vector<int> ref_coverage(ref.size(), 0);
+
     auto count = 0;
-
     for (auto const & seq: long_set) {
-        auto seq_len = seq.length();
-//        cout << ++count << "/" << long_set.size() << " ";
+//        cout << ++count << "/" << long_set.size() << "\n";
         cout.flush();
-        unordered_map<char, unsigned long long> dict = {{'A', 0}, {'G', 1}, {'C', 2}, {'T', 3}};
-        map<unsigned long long, pair<unsigned long long, unsigned long long> > anchor_map;
-
-        unsigned long long hash = 0;
-        auto i = 0;
-        for (; i < hash_len; ++i) {
-            hash = ((hash << 2) | dict[seq[i]]) & mask;
-        }
-        insert_anchors(ref_hashmap, anchor_map, hash, i - 1, hash_len);
-        for (; i < seq_len; ++i) {
-            hash = ((hash << 2) | dict[seq[i]]) & mask;
-            insert_anchors(ref_hashmap, anchor_map, hash, i, hash_len);
-        }
-
-        vector<double> chain_scores;
-        perform_chaining(anchor_map, chain_scores, ref_coverage, hash_len, seq_len);
+        query_vs_reference(seq, ref_hashmap, hash_len, ref_coverage);
     }
 
     auto covers = 0;
@@ -281,35 +261,85 @@ void process_longs(string const & ref, unordered_set<string> const & long_set,
             covers++;
         }
     }
-
-    cout << "\nref coverage: " << covers << "/" << ref_coverage.size() << endl;
+    cout << "ref coverage: " << covers << "/" << ref_coverage.size() << endl;
 
     auto error_series = 0;
-    auto cover_series = 0;
-    auto cover_count = 0;
-    auto error_count = 0;
+    suspects.clear();
     for (auto i = 0; i < ref_coverage.size(); ++i) {
         if (!ref_coverage[i]) {
             error_series++;
         } else {
-            if (error_series > 100) {
-                cout << i - error_series << "\t" << i - 1 << endl;
-                ++error_count;
+            if (error_series > LEN_B) {
+                suspects.emplace_back(make_pair(i - error_series, i - 1));
             }
             error_series = 0;
         }
-        if (cover_count == 0 && ref_coverage[i]) {
-            cover_count = ref_coverage[i];
-        }
-        if (ref_coverage[i] == cover_count && cover_count != 0) {
-            cover_series++;
-        } else if (cover_count) {
-//            cout << i - cover_series << "-" << i - 1 << ": " << cover_count << endl;
-            cover_count = 0;
-            cover_series = 0;
+    }
+    cout << "Total " << suspects.size() << " intervals" << endl;
+}
+
+void check_inv(string const & ref_base, vector<pair<unsigned long long, unsigned long long> > & suspects,
+               unordered_set<string> const & long_set, int hash_len)
+{
+    unordered_map<string, string> ref_map;
+    ref_map.insert({"A", ref_base});
+//    for (auto i = 0; i < suspects.size(); ++i) {
+//        auto l = suspects[i].first;
+//        auto r = suspects[i].second;
+//        auto old_str = ref_base.substr(l, r - l + 1);
+//        string new_str;
+//        make_inv(old_str, new_str);
+//        ref_map.insert({to_string(i), new_str});
+//    }
+    unordered_set<string> long_inv_set;
+    for (const auto & it : long_set) {
+        string new_str;
+        make_inv(it, new_str);
+        long_inv_set.insert(new_str);
+    }
+
+    unordered_map<string, unordered_multimap<unsigned long long, unsigned long long> > ref_hashmap;
+    make_hashmap(ref_map, ref_hashmap, hash_len);
+
+    auto ref_len = ref_base.size();
+    vector<pair<unsigned long long, unsigned long long> > misses;
+    process_longs(ref_base, long_inv_set, ref_hashmap["A"], "A", hash_len, misses);
+
+    vector<int> ref_coverage(ref_len, 1);
+    for (auto x: misses) {
+        for (auto i = x.first; i <= x.second; ++i) {
+            ref_coverage[i] = 0;
         }
     }
-    cout << "Total " << error_count << " intervals" << endl;
+    for (auto x: suspects) {
+        auto covers = 0;
+        for (auto i = x.first; i <= x.second; ++i) {
+            covers += ref_coverage[i];
+        }
+        cout << x.first << " " << x.second << ":\t" << covers << "/" << x.second - x.first + 1 << endl;
+    }
+
+//    for (auto i = 0; i < suspects.size(); ++i) {
+//        bool found_inv = false;
+//        auto ref_len = ref_map[to_string(i)].size();
+//
+//        vector<int> ref_coverage(ref_len, 0);
+//
+//        auto count = 0;
+//        for (auto & query: long_set) {
+//            query_vs_reference(query, ref_hashmap[to_string(i)], hash_len, ref_coverage);
+//        }
+//
+//        auto cover_count = 0;
+//        for (auto x: ref_coverage) {
+//            cover_count += (x > 0);
+//        }
+//        cout << suspects[i].first << " " << suspects[i].second << ":\t" << cover_count << "/" << ref_len << endl;
+//        if (cover_count > ref_len / 2) {
+////            cout << "INV " << suspects[i].first << " " << suspects[i].second << endl;
+//        }
+//
+//    }
 }
 
 void dispatch(unordered_map<string, string> & ref_map, unordered_map<string, unordered_set<string> > & long_map,
@@ -317,56 +347,10 @@ void dispatch(unordered_map<string, string> & ref_map, unordered_map<string, uno
               vector<string> const & id_vec, int hash_len)
 {
     for (auto const & id: id_vec) {
-        process_longs(ref_map[id], long_map[id], ref_hashmap[id], id, hash_len);
+        vector<pair<unsigned long long, unsigned long long> > suspects;
+        process_longs(ref_map[id], long_map[id], ref_hashmap[id], id, hash_len, suspects);
+        check_inv(ref_map[id], suspects, long_map[id], hash_len);
     }
-}
-
-void exam_data(unordered_map<string, string> & ref_map, unordered_map<string, string> & long_map)
-{
-    unordered_map<string, int> long_visited;
-
-    for (const auto& item: long_map) {
-        long_visited.insert({item.first, 0});
-    }
-
-    auto long_size = long_map.size();
-    auto long_matched = 0;
-
-    for (const auto& item: ref_map) {
-        string base = item.second;
-        auto base_len = base.length();
-        auto last_perc = base_len;
-        last_perc = 0;
-        for (auto i = 0; i + LEN_A - 1 < base_len; i += LEN_A) {
-            string base_excerpt = base.substr(i, LEN_A);
-            bool printed = false;
-
-            auto perc = 100 * i / base_len;
-            if (perc >= last_perc + 1) {
-                cout << "base: " << perc << "%" << endl;
-                last_perc = perc;
-            }
-
-            for (const auto& x: long_map) {
-                if (x.second.find(base_excerpt) != string::npos) {
-                    if (!printed) {
-                        cout << base_excerpt << " matched: " << endl;
-                        printed = true;
-                    }
-                    cout << "\tin " << x.first << endl;
-                    auto old_size = long_visited[x.first];
-                    long_visited[x.first]++;
-                    if (old_size == 0) {
-                        cout << ++long_matched << "/" << long_size << endl;
-                    }
-                }
-            }
-        }
-    }
-
-//    for (const auto& item: long_map) {
-//        long_visited.insert({item.first, 0});
-//    }
 }
 
 int main()
@@ -379,11 +363,7 @@ int main()
     read_fasta(ref_map, long_map, id_vec);
     make_hashmap(ref_map, ref_hashmap, LEN_A);
 
-
     dispatch(ref_map, long_map, ref_hashmap, id_vec, LEN_A);
-
-//    exam_data(ref_map, long_map);
-//    work(ref_map, sv_map);
 
 
     return 0;
