@@ -89,6 +89,9 @@
 		<Unit filename="C:/Data/repos/gener/commons.cpp">
 			<Option target="gener"/>
 		</Unit>
+		<Unit filename="C:/Data/repos/gener/concat.cpp">
+			<Option target="gener"/>
+		</Unit>
 		<Unit filename="C:/Data/repos/gener/declarations.h">
 			<Option target="gener"/>
 		</Unit>

@@ -8,7 +8,7 @@
 
 // prepare.cpp
 void read_fasta(std::unordered_map<std::string, std::string> & ref_map,
-                std::unordered_map<std::string, std::unordered_set<std::string> > & long_map,
+                std::unordered_map<std::string, std::unordered_map<std::string, std::string> > & long_map,
                 std::vector<std::string> & id_vec);
 
 void make_hashmap(std::unordered_map<std::string, std::string> & src_map,
@@ -21,6 +21,23 @@ void make_inv_hashmap(std::unordered_map<std::string, std::string> & src_map,
                   std::unordered_map<std::string, std::unordered_multimap<unsigned long long, unsigned long long> > & res_map,
                   int hash_len);
 
+
+// commons.cpp
 unsigned long long get_mask_from_hash_len(int);
+
+
+// alignment.cpp
+align_res_t align(const std::string & id1, const std::string & id2,
+                  std::unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
+                  std::string const & query, int hash_len, unsigned long long base_len);
+
+align_res_t align(const std::string & id1, const std::string & id2,
+                  std::string const & str1, std::string const & str2, int hash_len);
+
+
+// concat.cpp
+void concat_longs(std::string const & ref, std::unordered_map<std::string, std::string> & long_map,
+                  std::unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
+                  std::string const & id, int hash_len, unsigned long long base_len);
 
 #endif //GENER_DECLARATIONS_H

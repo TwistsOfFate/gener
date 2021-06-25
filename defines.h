@@ -26,4 +26,47 @@ struct id_pos_t {
     }
 };
 
+struct align_res_t {
+    std::string id1, id2;
+    unsigned long long len1, len2;
+    unsigned long long l1, r1, l2, r2;
+    double score;
+
+    explicit align_res_t(const std::string& s="", const std::string& t="", unsigned long long x=0, unsigned long long y=0,
+                unsigned long long a=0, unsigned long long b=0, unsigned long long c=0, unsigned long long d=0, double e=0)
+    {
+        this->id1 = s; this->id2 = t;
+        this->len1 = x; this->len2 = y;
+        this->l1 = a; this->r1 = b; this->l2 = c; this->r2 = d;
+        this->score = e;
+    }
+
+    void update(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d, double e)
+    {
+        this->l1 = a;
+        this->r1 = b;
+        this->l2 = c;
+        this->r2 = d;
+        this->score = e;
+    }
+
+    void clear()
+    {
+        this->id1 = ""; this->id2 = "";
+        this->len1 = 0; this->len2 = 0;
+        this->l1 = 0; this->r1 = 0; this->l2 = 0; this->r2 = 0;
+        this->score = 0;
+    }
+
+    bool operator < (const align_res_t & rhs) const
+    {
+        return l1 < rhs.l1;
+    }
+
+    unsigned long long extend_len() const
+    {
+        return r1 + len2 - r2;
+    }
+};
+
 #endif //GENER_DEFINES_H

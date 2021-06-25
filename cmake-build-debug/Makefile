@@ -222,6 +222,33 @@ commons.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/commons.cpp.s
 .PHONY : commons.cpp.s
 
+concat.obj: concat.cpp.obj
+
+.PHONY : concat.obj
+
+# target to build an object file
+concat.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/concat.cpp.obj
+.PHONY : concat.cpp.obj
+
+concat.i: concat.cpp.i
+
+.PHONY : concat.i
+
+# target to preprocess a source file
+concat.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/concat.cpp.i
+.PHONY : concat.cpp.i
+
+concat.s: concat.cpp.s
+
+.PHONY : concat.s
+
+# target to generate assembly for a file
+concat.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/concat.cpp.s
+.PHONY : concat.cpp.s
+
 main.obj: main.cpp.obj
 
 .PHONY : main.obj
@@ -294,6 +321,9 @@ help:
 	@echo ... commons.obj
 	@echo ... commons.i
 	@echo ... commons.s
+	@echo ... concat.obj
+	@echo ... concat.i
+	@echo ... concat.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s

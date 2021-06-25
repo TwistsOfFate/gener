@@ -5,27 +5,33 @@
 #include <vector>
 #include <set>
 #include <unordered_set>
+#include <algorithm>
 #include "defines.h"
+#include "declarations.h"
 
 using std::cout;        using std::endl;
 using std::string;      using std::unordered_map;
 using std::vector;      using std::unordered_set;
 using std::unordered_multimap;
 using std::ifstream;    using std::set;
+using std::sort;
 
-
+/*
+ * long_map: {ref_id: {long_id: long}}
+ * id_vec: IDs of ref, sorted
+ */
 void read_fasta(unordered_map<string, string> & ref_map,
-                unordered_map<string, unordered_set<string> > & long_map, vector<string> & id_vec)
+                unordered_map<string, unordered_map<string, string> > & long_map, vector<string> & id_vec)
 {
     ifstream ref_if, long_if;
     string line;
 
-    set<string> id_set;
+    id_vec.clear();
 
     ref_if.open(REF_FASTA);
     while (getline(ref_if, line)) {
         string title = line.substr(1);
-        id_set.insert(title);
+        id_vec.emplace_back(title);
         if (!getline(ref_if, line)) {
             break;
         }
@@ -33,10 +39,10 @@ void read_fasta(unordered_map<string, string> & ref_map,
     }
     ref_if.close();
 
-    for (auto const & id: id_set) {
-        id_vec.push_back(id);
-        unordered_set<string> new_set;
-        long_map.insert({id, new_set});
+    sort(id_vec.begin(), id_vec.end());
+    for (auto const & id: id_vec) {
+        unordered_map<string, string> new_map;
+        long_map.insert({id, new_map});
     }
 
     long_if.open(LONG_FASTA);
@@ -45,22 +51,9 @@ void read_fasta(unordered_map<string, string> & ref_map,
         if (!getline(long_if, line)) {
             break;
         }
-        long_map[id_vec[title[1] - '1']].insert(line);
+        long_map[id_vec[title[1] - '1']].insert({title, line});
     }
     long_if.close();
-}
-
-unsigned long long get_mask_from_hash_len(int hash_len)
-{
-    unsigned long long mask = 0;
-    if (hash_len > 32) {
-        mask = ~0;
-    } else {
-        for (auto i = 0; i < hash_len * 2; ++i) {
-            mask = (mask << 1) + 1;
-        }
-    }
-    return mask;
 }
 
 void make_hashmap(unordered_map<string, string> & src_map,

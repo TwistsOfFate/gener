@@ -6,23 +6,7 @@
 
 #IncludeRegexTransform: 
 
-C:/Data/repos/gener/declarations.h
-string
--
-unordered_map
--
-vector
--
-unordered_set
--
-
-C:/Data/repos/gener/defines.h
-string
--
-iostream
--
-
-C:/Data/repos/gener/main.cpp
+C:/Data/repos/gener/concat.cpp
 iostream
 -
 string
@@ -39,10 +23,26 @@ unordered_set
 -
 tuple
 -
-cmath
+algorithm
 -
 defines.h
 C:/Data/repos/gener/defines.h
 declarations.h
 C:/Data/repos/gener/declarations.h
+
+C:/Data/repos/gener/declarations.h
+string
+-
+unordered_map
+-
+vector
+-
+unordered_set
+-
+
+C:/Data/repos/gener/defines.h
+string
+-
+iostream
+-
 
