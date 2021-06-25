@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <tuple>
 #include <algorithm>
+#include <fstream>
 #include "defines.h"
 #include "declarations.h"
 
@@ -19,7 +20,7 @@ using std::pair;        using std::unordered_set;
 using std::make_tuple;  using std::tuple;
 using std::get;         using std::max;
 using std::min;         using std::make_pair;
-using std::sort;
+using std::sort;        using std::ofstream;
 
 typedef unsigned long long ull;
 
@@ -143,4 +144,15 @@ void concat_longs(string const & ref, unordered_map<string, string> & long_map, 
         }
     }
     cout << "result covers: " << result_cover << ", span: " << result_left << "-" << result_right << endl;
+
+    ofstream ofs;
+    ofs.open("blanks.txt");
+    for (auto i = 0; i < result_right; ++i) {
+        if (result[i] == ' ') {
+            ofs << i << endl;
+        } else {
+            ofs << endl;
+        }
+    }
+    ofs.close();
 }
