@@ -92,12 +92,12 @@ clean: CMakeFiles/gener.dir/clean
 CMakeFiles/gener.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Data\repos\gener\cmake-build-debug\CMakeFiles --progress-num=1,2,3,4 "Built target gener"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Data\repos\gener\cmake-build-debug\CMakeFiles --progress-num=1,2,3,4,5,6 "Built target gener"
 .PHONY : CMakeFiles/gener.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/gener.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Data\repos\gener\cmake-build-debug\CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Data\repos\gener\cmake-build-debug\CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/gener.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Data\repos\gener\cmake-build-debug\CMakeFiles 0
 .PHONY : CMakeFiles/gener.dir/rule

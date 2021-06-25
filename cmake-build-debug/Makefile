@@ -141,6 +141,33 @@ gener/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/build
 .PHONY : gener/fast
 
+alignment.obj: alignment.cpp.obj
+
+.PHONY : alignment.obj
+
+# target to build an object file
+alignment.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/alignment.cpp.obj
+.PHONY : alignment.cpp.obj
+
+alignment.i: alignment.cpp.i
+
+.PHONY : alignment.i
+
+# target to preprocess a source file
+alignment.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/alignment.cpp.i
+.PHONY : alignment.cpp.i
+
+alignment.s: alignment.cpp.s
+
+.PHONY : alignment.s
+
+# target to generate assembly for a file
+alignment.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/alignment.cpp.s
+.PHONY : alignment.cpp.s
+
 check_sv.obj: check_sv.cpp.obj
 
 .PHONY : check_sv.obj
@@ -167,6 +194,33 @@ check_sv.s: check_sv.cpp.s
 check_sv.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/check_sv.cpp.s
 .PHONY : check_sv.cpp.s
+
+commons.obj: commons.cpp.obj
+
+.PHONY : commons.obj
+
+# target to build an object file
+commons.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/commons.cpp.obj
+.PHONY : commons.cpp.obj
+
+commons.i: commons.cpp.i
+
+.PHONY : commons.i
+
+# target to preprocess a source file
+commons.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/commons.cpp.i
+.PHONY : commons.cpp.i
+
+commons.s: commons.cpp.s
+
+.PHONY : commons.s
+
+# target to generate assembly for a file
+commons.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\gener.dir\build.make CMakeFiles/gener.dir/commons.cpp.s
+.PHONY : commons.cpp.s
 
 main.obj: main.cpp.obj
 
@@ -231,9 +285,15 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... gener
+	@echo ... alignment.obj
+	@echo ... alignment.i
+	@echo ... alignment.s
 	@echo ... check_sv.obj
 	@echo ... check_sv.i
 	@echo ... check_sv.s
+	@echo ... commons.obj
+	@echo ... commons.i
+	@echo ... commons.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
