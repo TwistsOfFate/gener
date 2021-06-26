@@ -39,8 +39,12 @@ align_res_t align(const std::string & id1, const std::string & id2,
 
 
 // concat.cpp
-void concat_longs(std::string const & ref, std::unordered_map<std::string, std::string> & long_map,
-                  std::unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
-                  std::string const & id, unsigned long long base_len);
+std::vector<std::string> concat_longs(std::string const & ref, std::unordered_map<std::string, std::string> & long_map,
+                                      std::unordered_multimap<unsigned long long, unsigned long long> const & ref_hashmap,
+                                      std::string const & id, unsigned long long base_len);
+
+
+// compare.cpp
+std::vector<std::string> find_answers(std::string & ref, std::vector<std::string> & concats);
 
 #endif //GENER_DECLARATIONS_H

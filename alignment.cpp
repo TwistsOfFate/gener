@@ -131,7 +131,7 @@ align_res_t perform_chaining(const string & id1, const string & id2, vector<tupl
     }
 
     if (chain_scores[best_score_id] < seq_len / 5.0 && chain_scores[best_score_id] < LEN_B || r1 - l1 > seq_len * 2) {
-        return align_res_t(id1, id2, base_len, seq_len, 0, 0, 0, 0, chain_scores[best_score_id]);
+        return align_res_t(id1, id2, base_len, seq_len, 0, 0, 0, 0, 0.0);
     } else {
         return align_res_t(id1, id2, base_len, seq_len, l1, r1, l2, r2, chain_scores[best_score_id]);
     }
@@ -158,8 +158,11 @@ align_res_t align(const string & id1, const string & id2, unordered_multimap<ull
     }
     sort(anchor_vec.begin(), anchor_vec.end());
 
+    align_res_t align_res = perform_chaining(id1, id2, anchor_vec, hash_len, base_len, query_len);
 
-    return perform_chaining(id1, id2, anchor_vec, hash_len, base_len, query_len);
+//    cout << "align score: " << align_res.score << "/" << query_len << endl;
+
+    return align_res;
 }
 
 align_res_t align(const string & id1, const string & id2, string const & str1, string const & str2, int hash_len)

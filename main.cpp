@@ -47,12 +47,14 @@ void count_pos_in_ref(unordered_multimap<ull, id_pos_t> const & ref_hashmap, map
     }
 }
 
-void dispatch(unordered_map<string, string> & ref_map, unordered_map<string, unordered_map<string, string> > & long_map,
-              unordered_map<string, unordered_multimap<ull, ull> > & ref_hashmap, vector<string> const & id_vec,
-              int hash_len)
+void dispatch(unordered_map<string, string> &ref_map,
+              unordered_map<string, unordered_map<string, string> > &long_map,
+              unordered_map<string, unordered_multimap<ull, ull> > &ref_hashmap,
+              vector<string> const &id_vec)
 {
     for (auto const & id: id_vec) {
-        concat_longs(ref_map[id], long_map[id], ref_hashmap[id], id, ref_map[id].length());
+        vector<string> concats = concat_longs(ref_map[id], long_map[id], ref_hashmap[id], id, ref_map[id].length());
+        vector<string> answers = find_answers(ref_map[id], concats);
     }
 }
 
@@ -64,9 +66,9 @@ int main()
     vector<string> id_vec;
 
     read_fasta(ref_map, long_map, id_vec);
-    make_hashmap(ref_map, ref_hashmap, LEN_A);
+    make_hashmap(ref_map, ref_hashmap, SEED_LEN_A);
 
-    dispatch(ref_map, long_map, ref_hashmap, id_vec, LEN_C);
+    dispatch(ref_map, long_map, ref_hashmap, id_vec);
 
     cout << "Done" << endl;
 

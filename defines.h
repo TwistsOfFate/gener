@@ -11,10 +11,11 @@
 #define IDENTICAL_LEN 50
 #define MAX_SV_LEN 1005
 #define MIN_SV_LEN 50
-#define LEN_A 12
+#define SEED_LEN_A 12
 #define LEN_B 100
-#define LEN_C 10
+#define SEED_LEN_B 8
 #define LEN_G 100
+#define LEN_D 10
 
 struct id_pos_t {
     std::string id;
