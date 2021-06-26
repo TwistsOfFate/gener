@@ -51,9 +51,39 @@ void read_fasta(unordered_map<string, string> & ref_map,
         if (!getline(long_if, line)) {
             break;
         }
+        char tail = title.back();
+        if ((tail - '0') % 2 == 0) {
+            line = inverse(line);
+        }
         long_map[id_vec[title[1] - '1']].insert({title, line});
     }
     long_if.close();
+}
+
+void make_hashmap(string & base, unordered_multimap<unsigned long long, unsigned long long> & res_map, int hash_len)
+{
+    unsigned long long mask = get_mask_from_hash_len(hash_len);
+    unordered_map<char, unsigned long long> dict = {{'A', 0}, {'G', 1}, {'C', 2}, {'T', 3}};
+    res_map.clear();
+
+    auto base_len = base.length();
+
+    if (base_len < hash_len) {
+        cout << "make_hashmap: base_len < hash_len" << endl;
+        return;
+    }
+
+    unsigned long long hash = 0;
+    auto i = 0;
+    for (; i < hash_len; ++i) {
+        hash = ((hash << 2) | dict[base[i]]) & mask;
+    }
+
+    res_map.insert({hash, i - 1});
+    for (; i < base_len; ++i) {
+        hash = ((hash << 2) | dict[base[i]]) & mask;
+        res_map.insert({hash, i});
+    }
 }
 
 void make_hashmap(unordered_map<string, string> & src_map,
@@ -95,16 +125,6 @@ void make_hashmap(unordered_map<string, string> & src_map,
     cout << "make_hashmap: done." << endl;
 }
 
-void make_inv(string const & src, string & res)
-{
-    unordered_map<char, char> comp = {{'A', 'T'}, {'G', 'C'}, {'C', 'G'}, {'T', 'A'}};
-    auto len = src.length();
-    res.resize(len);
-    for (auto i = 0; i < len; ++i) {
-        res[len - 1 - i] = comp[src[i]];
-    }
-}
-
 void make_inv_hashmap(unordered_map<string, string> & src_map,
                   unordered_map<string, unordered_multimap<unsigned long long, unsigned long long> > & res_map,
                   int hash_len)
@@ -126,8 +146,7 @@ void make_inv_hashmap(unordered_map<string, string> & src_map,
         }
 
         for (auto i = hash_len - 1; i < base_len; ++i) {
-            string inv;
-            make_inv(base.substr(i - hash_len + 1, hash_len), inv);
+            string inv = inverse(base.substr(i - hash_len + 1, hash_len));
             unsigned long long hash = 0;
             for (auto ch: inv) {
                 hash = ((hash << 2) | dict[ch]) & mask;

@@ -63,8 +63,8 @@ void insert_anchor(unordered_multimap<ull, ull> const & ref_hashmap, vector<tupl
 
 double calc_chain_score(double fj, double xi, double xj, double yi, double yj, double wi, double wj, double seed_len)
 {
-    const double INF = 9999999;
-    const double G = LEN_B;
+    const double INF = 999999;
+    const double G = LEN_G;
 
     fj += min(min(yi - yj, xi - xj), wi);
 
@@ -108,6 +108,7 @@ align_res_t perform_chaining(const string & id1, const string & id2, vector<tupl
         for (auto j = i - 1; j >= i - 50 && j >= 0; --j) {
             auto xj = get<0>(anchors[j]), yj = get<1>(anchors[j]), wj = get<2>(anchors[j]);
             double candidate = calc_chain_score(chain_scores[j], xi, xj, yi, yj, wi, wj, seed_len);
+
             if (chain_scores[i] < candidate) {
                 chain_scores[i] = candidate;
                 pred[i] = j;
@@ -129,7 +130,7 @@ align_res_t perform_chaining(const string & id1, const string & id2, vector<tupl
         }
     }
 
-    if (chain_scores[best_score_id] < seq_len / 10.0 && chain_scores[best_score_id] < LEN_B || r1 - l1 > seq_len * 2) {
+    if (chain_scores[best_score_id] < seq_len / 5.0 && chain_scores[best_score_id] < LEN_B || r1 - l1 > seq_len * 2) {
         return align_res_t(id1, id2, base_len, seq_len, 0, 0, 0, 0, chain_scores[best_score_id]);
     } else {
         return align_res_t(id1, id2, base_len, seq_len, l1, r1, l2, r2, chain_scores[best_score_id]);

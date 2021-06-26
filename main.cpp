@@ -6,7 +6,6 @@
 #include <map>
 #include <unordered_set>
 #include <tuple>
-#include <cmath>
 #include "defines.h"
 #include "declarations.h"
 
@@ -53,7 +52,7 @@ void dispatch(unordered_map<string, string> & ref_map, unordered_map<string, uno
               int hash_len)
 {
     for (auto const & id: id_vec) {
-        concat_longs(ref_map[id], long_map[id], ref_hashmap[id], id, hash_len, ref_map[id].length());
+        concat_longs(ref_map[id], long_map[id], ref_hashmap[id], id, ref_map[id].length());
     }
 }
 
@@ -67,7 +66,7 @@ int main()
     read_fasta(ref_map, long_map, id_vec);
     make_hashmap(ref_map, ref_hashmap, LEN_A);
 
-    dispatch(ref_map, long_map, ref_hashmap, id_vec, LEN_A);
+    dispatch(ref_map, long_map, ref_hashmap, id_vec, LEN_C);
 
     cout << "Done" << endl;
 
