@@ -58,6 +58,8 @@ vector<align_res_t> align_longs_to_ref(string const & ref, unordered_map<string,
     }
     cout << "Coverage on ref: " << cover_count << "/" << ref.size() << endl;
     cout << "Valid matches: " << aligns.size() << "/" << long_map.size() << endl;
+
+    return aligns;
 }
 
 
