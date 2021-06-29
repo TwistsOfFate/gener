@@ -26,7 +26,6 @@ typedef unsigned long long ull;
 void find_dup(vector<double> const & ref_cover, const align_res_t& alignment, int COMPARE_LEN, int SCAN_TIMES,
               vector<ans_t> & suspects)
 {
-    // find DUP and DEL occurrences in ref
     const double LO = COMPARE_LEN * 0.02, HI = COMPARE_LEN * SCAN_TIMES * 1.2;
     ull ans_l = 0, ans_r = 0;
     string ans_stat = "NONE";
@@ -67,17 +66,15 @@ void find_dup(vector<double> const & ref_cover, const align_res_t& alignment, in
     }
 }
 
-void find_del(vector<double> const & ref_cover, vector<double> const & query_cover,
-              const align_res_t& alignment, int COMPARE_LEN, int SCAN_TIMES, ull query_len, vector<ans_t> & suspects)
+void identify_misses(vector<double> const & ref_cover, vector<double> const & query_cover,
+                     const align_res_t& alignment, int COMPARE_LEN, int SCAN_TIMES, ull query_len,
+                     vector<align_res_t> & misses)
 {
-
     pair<ull, ull> ref_interval{0, 0}, query_interval{0, 0};
     double ref_score{99999.0}, query_score{99999.0};
 
     ofstream ofs;
-    ofs.open("../logs/find_del.log", std::ios_base::app);
-
-    ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
+    ofs.open("../logs/id_misses.log", std::ios_base::app);
 
     const double LO_REF = COMPARE_LEN * 0.05 * SCAN_TIMES;
     ull ans_l = 0, ans_r = 0;
@@ -153,32 +150,38 @@ void find_del(vector<double> const & ref_cover, vector<double> const & query_cov
     auto abs_pos_diff = ref_interval.first > query_interval.first ? ref_interval.first - query_interval.first : query_interval.first - ref_interval.first;
 
     if (ref_diff > 0 && query_diff > 0 && abs_len_diff < min(ref_diff, query_diff) * 0.3 && abs_pos_diff < min(ref_diff, query_diff) * 0.4) {
-        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
-            suspects[k].votes["INV"]++;
-        }
-    } else if (ref_diff > 0 && query_diff == 0) {
-        for (auto k = ref_interval.first + alignment.pos; k <= ref_interval.second + alignment.pos; ++k) {
-            suspects[k].votes["DEL"]++;
-        }
-    } else if (ref_diff == 0 && query_diff > 0) {
-        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
-            suspects[k].votes["INS"]++;
-        }
-    }
-
-    if (ref_interval.second > ref_interval.first || query_interval.second > query_interval.first) {
-        ans_l = ref_interval.first;
-        ans_r = ref_interval.second;
-        ofs << ans_l << " " << ans_r << " " << ref_score / (ans_r - ans_l);
-        ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl << endl;
-
+//        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
+//            suspects[k].votes["INV"]++;
+//        }
         ans_l = query_interval.first;
         ans_r = query_interval.second;
-        ofs << ans_l << " " << ans_r << " " << query_score / (ans_r - ans_l);
+        ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
+        ofs << "INV " << ans_l << " " << ans_r << " " << query_score / (ans_r - ans_l);
         ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl;
+        ofs << endl;
+    } else if (ref_diff > 0 && query_diff == 0) {
+//        for (auto k = ref_interval.first + alignment.pos; k <= ref_interval.second + alignment.pos; ++k) {
+//            suspects[k].votes["DEL"]++;
+//        }
+        ans_l = ref_interval.first;
+        ans_r = ref_interval.second;
+        ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
+        ofs << "DEL " << ans_l << " " << ans_r << " " << ref_score / (ans_r - ans_l);
+        ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl;
+        ofs << endl;
+    } else if (ref_diff == 0 && query_diff > 0) {
+//        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
+//            suspects[k].votes["INS"]++;
+//        }
+        ans_l = query_interval.first;
+        ans_r = query_interval.second;
+        ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
+        ofs << "INS " << ans_l << " " << ans_r << " " << query_score / (ans_r - ans_l);
+        ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl;
+        ofs << endl;
     }
 
-    ofs << endl << endl;
+
 }
 
 void compare(const string & ref, const string & query, const align_res_t& alignment, vector<ans_t> & suspects)
@@ -204,13 +207,14 @@ void compare(const string & ref, const string & query, const align_res_t& alignm
     }
 
     find_dup(ref_cover, alignment, COMPARE_LEN, SCAN_TIMES, suspects);
-    find_del(ref_cover, query_cover, alignment, COMPARE_LEN, SCAN_TIMES, query.length(), suspects);
+
+    vector<align_res_t> misses;
+    identify_misses(ref_cover, query_cover, alignment, COMPARE_LEN, SCAN_TIMES, query.length(), misses);
 
 }
 
-vector<string> find_answers(string & ref, vector<string> & concats, string const & id)
+void find_answers(string & ref, vector<string> & concats, string const & id, vector<string> & answers)
 {
-    vector<string> answers;
     auto ref_len = ref.length();
     unordered_multimap<ull, ull> hashmap;
     make_hashmap(ref, hashmap, LEN_D);
@@ -251,7 +255,8 @@ vector<string> find_answers(string & ref, vector<string> & concats, string const
             if (maj.empty() || maj != stat) {
                 if (i - lst > 200) {
                     if (lst - fst > 50 && lst - fst < 1500) {
-                        ofs << stat << " " << id << " " << fst << " " << lst << endl;
+                        answers.push_back(stat + " " + id + " " + to_string(fst) + " " + to_string(lst));
+//                        ofs << stat << " " << id << " " << fst << " " << lst << endl;
                     }
                     stat.clear();
                     fst = lst = 0;
@@ -263,7 +268,5 @@ vector<string> find_answers(string & ref, vector<string> & concats, string const
     }
     ofs.close();
 
-
-    return answers;
 }
 

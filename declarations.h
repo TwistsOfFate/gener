@@ -45,6 +45,7 @@ std::vector<std::string> concat_longs(std::string const & ref, std::unordered_ma
 
 
 // compare.cpp
-std::vector<std::string> find_answers(std::string & ref, std::vector<std::string> & concats, std::string const & id);
+void find_answers(std::string & ref, std::vector<std::string> & concats, std::string const & id,
+                  std::vector<std::string> & answers);
 
 #endif //GENER_DECLARATIONS_H
