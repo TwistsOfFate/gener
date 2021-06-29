@@ -54,7 +54,7 @@ void dispatch(unordered_map<string, string> &ref_map,
 {
     for (auto const & id: id_vec) {
         vector<string> concats = concat_longs(ref_map[id], long_map[id], ref_hashmap[id], id, ref_map[id].length());
-        vector<string> answers = find_answers(ref_map[id], concats);
+        vector<string> answers = find_answers(ref_map[id], concats, id);
     }
 }
 
