@@ -35,9 +35,11 @@ void dispatch(unordered_map<string, string> &ref_map,
         find_answers(ref_map[id], concats, id, answers);
     }
 
+
+
     ofstream ofs;
     ofs.open("../logs/answers.txt");
-    for (auto x: answers) {
+    for (const auto& x: answers) {
         ofs << x << endl;
     }
     ofs.close();

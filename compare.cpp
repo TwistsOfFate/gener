@@ -68,7 +68,7 @@ void find_dup(vector<double> const & ref_cover, const align_res_t& alignment, in
 
 void identify_misses(vector<double> const & ref_cover, vector<double> const & query_cover,
                      const align_res_t& alignment, int COMPARE_LEN, int SCAN_TIMES, ull query_len,
-                     vector<align_res_t> & misses)
+                     vector<ans_t> & suspects)
 {
     pair<ull, ull> ref_interval{0, 0}, query_interval{0, 0};
     double ref_score{99999.0}, query_score{99999.0};
@@ -150,9 +150,9 @@ void identify_misses(vector<double> const & ref_cover, vector<double> const & qu
     auto abs_pos_diff = ref_interval.first > query_interval.first ? ref_interval.first - query_interval.first : query_interval.first - ref_interval.first;
 
     if (ref_diff > 0 && query_diff > 0 && abs_len_diff < min(ref_diff, query_diff) * 0.3 && abs_pos_diff < min(ref_diff, query_diff) * 0.4) {
-//        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
-//            suspects[k].votes["INV"]++;
-//        }
+        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
+            suspects[k].votes["INV"]++;
+        }
         ans_l = query_interval.first;
         ans_r = query_interval.second;
         ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
@@ -160,9 +160,9 @@ void identify_misses(vector<double> const & ref_cover, vector<double> const & qu
         ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl;
         ofs << endl;
     } else if (ref_diff > 0 && query_diff == 0) {
-//        for (auto k = ref_interval.first + alignment.pos; k <= ref_interval.second + alignment.pos; ++k) {
-//            suspects[k].votes["DEL"]++;
-//        }
+        for (auto k = ref_interval.first + alignment.pos; k <= ref_interval.second + alignment.pos; ++k) {
+            suspects[k].votes["DEL"]++;
+        }
         ans_l = ref_interval.first;
         ans_r = ref_interval.second;
         ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
@@ -170,9 +170,9 @@ void identify_misses(vector<double> const & ref_cover, vector<double> const & qu
         ofs << "\t" << ans_l + alignment.pos << " " << ans_r + alignment.pos << endl;
         ofs << endl;
     } else if (ref_diff == 0 && query_diff > 0) {
-//        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
-//            suspects[k].votes["INS"]++;
-//        }
+        for (auto k = query_interval.first + alignment.pos; k <= query_interval.second + alignment.pos; ++k) {
+            suspects[k].votes["INS"]++;
+        }
         ans_l = query_interval.first;
         ans_r = query_interval.second;
         ofs << "segment length: " << query_len << "\tscore: " << alignment.score << endl;
@@ -209,7 +209,7 @@ void compare(const string & ref, const string & query, const align_res_t& alignm
     find_dup(ref_cover, alignment, COMPARE_LEN, SCAN_TIMES, suspects);
 
     vector<align_res_t> misses;
-    identify_misses(ref_cover, query_cover, alignment, COMPARE_LEN, SCAN_TIMES, query.length(), misses);
+    identify_misses(ref_cover, query_cover, alignment, COMPARE_LEN, SCAN_TIMES, query.length(), suspects);
 
 }
 
@@ -219,8 +219,6 @@ void find_answers(string & ref, vector<string> & concats, string const & id, vec
     unordered_multimap<ull, ull> hashmap;
     make_hashmap(ref, hashmap, LEN_D);
 
-    double score_sum = 0.0;
-    ull query_len_sum = 0;
     vector<ans_t> suspects(ref_len + 1000);
     for (auto i = 0; i < concats.size(); ++i) {
         cout << "find_answers: " << i+1 << "/" << concats.size() << "\r";
@@ -228,35 +226,26 @@ void find_answers(string & ref, vector<string> & concats, string const & id, vec
 
         align_res_t align_res = align("ref", "query", hashmap, concats[i], LEN_D, ref_len);
         compare(ref, concats[i], align_res, suspects);
-
-        /* DEBUG */
-        score_sum += align_res.score;
-        query_len_sum += concats[i].length();
     }
     cout << endl;
 
-    /* DEBUG */
-    cout << "Average matching accuracy: " << score_sum / query_len_sum << endl;
-    cout << "Average matching score: " << score_sum / concats.size() << endl;
-
-
-    ofstream ofs;
-    ofs.open("../logs/answers.txt", std::ios_base::app);
     string stat;
     auto fst = 0, lst = 0;
     for (auto i = 0; i < ref_len; ++i) {
         string maj = suspects[i].majority();
         if (stat.empty()) {
-            if (suspects[i].votes[maj] >= 2 || maj == "INV" && suspects[i].votes[maj] >= 1) {
+            if (suspects[i].votes[maj] >= 2 || maj == "INV") {
                 stat = maj;
                 fst = lst = i;
             }
         } else {
-            if (maj.empty() || maj != stat) {
+            if (stat == "DEL" && (maj == "INV" || maj == "INS")) {
+                stat = maj;
+                lst = i;
+            } else if (maj.empty() || maj != stat) {
                 if (i - lst > 200) {
                     if (lst - fst > 50 && lst - fst < 1500) {
                         answers.push_back(stat + " " + id + " " + to_string(fst) + " " + to_string(lst));
-//                        ofs << stat << " " << id << " " << fst << " " << lst << endl;
                     }
                     stat.clear();
                     fst = lst = 0;
@@ -266,7 +255,6 @@ void find_answers(string & ref, vector<string> & concats, string const & id, vec
             }
         }
     }
-    ofs.close();
 
 }
 

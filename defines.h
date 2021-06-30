@@ -100,6 +100,8 @@ struct ans_t {
         }
         if (maj == "DEL" && votes["INV"]) {
              maj = "INV";
+        } else if (maj == "DEL" && votes["INS"]) {
+            maj = "INS";
         }
         return maj;
     }
